@@ -1,19 +1,13 @@
 
+import { RouterProvider } from 'react-router-dom';
 import './App.css'
-import LoginPage from './pages/LoginPage';
-
-function App() {
+import { router } from './routes/Router';
 
 
 
-  return (
-    <>
-     <LoginPage/>
-  {/* <button onClick={loginWithGoogle}>
-    SSO LOGIN
-    </button> */}
-    </>
-  )
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }
 
-export default App
+
