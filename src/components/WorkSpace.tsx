@@ -1,13 +1,22 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import WorkSpaceItem from './buttons/WorkSpaceItem';
 
 
 const WorkSpace = () => {
   const [activeId, setActiveId] = useState<number | null>(1);
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    fetch('http://localhost:3000/workspace')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setWorkspaces(data);
+      });
+  }, []);
+  
   const createNewWorkspace = () =>{
-
+    
   }
-  const workspaces = [
+  const workspaces1 = [
     { id: 1, name: "Marketing Team" },
     { id: 2, name: "Dev Project A" },
     { id: 3, name: "Personal Tasks" }
@@ -20,7 +29,7 @@ const WorkSpace = () => {
       </div>
 
       <nav className='flex-1 p-2 space-y-1 mt-4'>
-        {workspaces.map((ws) => (
+        {workspaces1.map((ws) => (
           <WorkSpaceItem 
             key={ws.id}
             name={ws.name}

@@ -21,12 +21,20 @@ export const pathList: ChildrenPath[] = [
     path: "board/:boardID",
     element: <BoardSpace />,
   },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
 
 ];
 export const navList: { name: string; children: ChildrenPath }[] = [
   {
     name: "Main",
     children: pathList[0]
+  },
+  {
+    name: "Login",
+    children: pathList[2]
   },
 
 ];
