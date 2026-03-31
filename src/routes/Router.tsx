@@ -5,6 +5,7 @@ import RootLayout from "../layouts/RootLayout";
 import Home from "../pages/Home";
 import BoardSpace from "../pages/BoardSpace";
 import type { JSX } from "react";
+import { DashboardPage } from "../pages/admin/DashboardPage";
 
 export interface ChildrenPath {
   index?: boolean;
@@ -25,6 +26,10 @@ export const pathList: ChildrenPath[] = [
     path: "/login",
     element: <LoginPage />,
   },
+  {
+    path: "/admin/dashboard",
+    element: <DashboardPage/>
+  }
 
 ];
 export const navList: { name: string; children: ChildrenPath }[] = [
