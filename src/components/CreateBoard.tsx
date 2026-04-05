@@ -14,7 +14,7 @@ const CreateBoard = ({ workspaceId, onBoardCreated }: CreateBoardProps) => {
   const [title, setTitle] = useState("");
   const [backgroundUrl, setBackgroundUrl] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-
+  
   // --- Handlers ---
   const handleCreateBoard = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,6 +38,7 @@ const CreateBoard = ({ workspaceId, onBoardCreated }: CreateBoardProps) => {
       });
       console.log(res)
       if (res.ok) {
+        
         setTitle("");
         setBackgroundUrl("");
         alert("Board created successfully!");
