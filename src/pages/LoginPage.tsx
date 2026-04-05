@@ -1,4 +1,4 @@
-import { useState, type FormEvent} from "react";
+import { useState, type FormEvent, type JSX} from "react";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface FormErrors {
@@ -79,19 +79,42 @@ export default function LoginPage(): JSX.Element {
     const loginWithGoogle = () => {
         window.location.href = `http://localhost:3000/api/auth/oauth/google`;
     };
+    
   // ── Handlers ────────────────────────────────────────────────────────────────
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
+    
     setErrors({});
     setIsLoading(true);
-    // Replace with your auth logic (e.g. signIn(email, password))
-    setTimeout(() => setIsLoading(false), 2000);
+
+    try {
+      // 1. Send the email and password to your backend
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid login credentials");
+      }
+
+      // 2. THIS is where you get the user data returned from the database
+      const userData = await response.json(); 
+      
+      console.log("Logged in user:", userData);
+      // 3. Do something with the data (e.g., save token, redirect to dashboard)
+      
+    } catch (error) {
+       setErrors({ email: "Login failed. Please check your credentials." });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSSO = (): void => {

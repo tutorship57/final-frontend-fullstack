@@ -1,12 +1,14 @@
 import React from 'react';
 
-interface CreateBoardButtonProps {
+interface ButtonWithIconProps {
   // Option 1: Standard Button style
   variant?: 'primary' | 'outline';
   onClick: () => void;
+  text: string
+  icon: string
 }
 
-const CreateBoardButton = ({ onClick, variant = 'primary' }: CreateBoardButtonProps) => {
+const ButtonWithIcon = ({ onClick, variant = 'primary', text ,icon}: ButtonWithIconProps) => {
   // Styles for the main header button
   const primaryStyles = "bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-lg hover:shadow-amber-900/20";
   
@@ -19,11 +21,11 @@ const CreateBoardButton = ({ onClick, variant = 'primary' }: CreateBoardButtonPr
       className={variant === 'primary' ? primaryStyles : outlineStyles}
     >
       <span className="flex items-center gap-2">
-        <span className="text-xl leading-none">+</span>
-        New Board
+        <span className="text-xl leading-none">{icon}</span>
+        {text}  
       </span>
     </button>
   );
 };
 
-export default CreateBoardButton;
+export default ButtonWithIcon;
