@@ -56,7 +56,7 @@ const ErrorIcon: React.FC = () => (
 // ─── Main component ───────────────────────────────────────────────────────────
 
 
-export default function LoginPage(): JSX.Element {
+export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -76,9 +76,9 @@ export default function LoginPage(): JSX.Element {
     return errs;
   };
 
-    const loginWithGoogle = () => {
-        window.location.href = `http://localhost:3000/api/auth/oauth/google`;
-    };
+    // const loginWithGoogle = () => {
+    //     window.location.href = `http://localhost:3000/api/auth/oauth/google`;
+    // };
   // ── Handlers ────────────────────────────────────────────────────────────────
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
@@ -97,7 +97,7 @@ export default function LoginPage(): JSX.Element {
   const handleGoogleSSO = (): void => {
     setGoogleLoading(true);
     // Replace with your OAuth redirect (e.g. signInWithGoogle())
-    window.location.href = `http://localhost:3000/api/auth/oauth/google`;
+    window.location.href = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/auth/oauth/google` :`http://localhost:3000/api/auth/oauth/google`
     setTimeout(() => setGoogleLoading(false), 2000);
   };
 
@@ -123,7 +123,7 @@ export default function LoginPage(): JSX.Element {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
 
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />

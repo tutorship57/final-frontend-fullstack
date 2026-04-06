@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface CreateBoardButtonProps {
   // Option 1: Standard Button style

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import BoardCard from './cards/BoardCard';
 import CreateBoardButton from './buttons/CreateBoardButton';

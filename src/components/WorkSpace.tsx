@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import WorkSpaceItem from './buttons/WorkSpaceItem';
 
 
 const WorkSpace = () => {
   const [activeId, setActiveId] = useState<number | null>(1);
-  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([]);
+  const [, setWorkspaces] = useState<{ id: string; name: string }[]>([]);
   useEffect(() => {
     fetch('http://localhost:3000/workspace')
       .then(res => res.json())

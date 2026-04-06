@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import  { useEffect } from 'react';
 
 // Define the interface for a single board's data
 interface BoardProps {

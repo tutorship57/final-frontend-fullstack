@@ -1,4 +1,3 @@
-import React from 'react'
 import WorkSpace from '../components/WorkSpace'
 
 import BoardList from '../components/BoardList'
