@@ -21,18 +21,21 @@ interface Permission {
 
 interface RoleManagerProps {
   workspaceId: string;
+  onRoleCreated?: () => void; 
 }
 
-const RoleManager = ({ workspaceId }: RoleManagerProps) => {
+const RoleManager = ({ workspaceId,onRoleCreated }: RoleManagerProps) => {
   const { user } = useAuth();
 
   // --- State ---
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
-  
+
   // Create Role State
   const [newRoleName, setNewRoleName] = useState("");
-  const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
+  const [availablePermissions, setAvailablePermissions] = useState<
+    Permission[]
+  >([]);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -49,12 +52,18 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
         const [rolesRes, membersRes, permissionRes] = await Promise.all([
           apiFetch(`/users/${user.userId}/workspace/${workspaceId}/roles`),
           apiFetch(`/users/${user.userId}/workspace/${workspaceId}/members`),
-          apiFetch(`/permissions`) 
+          apiFetch(`/permissions`),
         ]);
 
         if (rolesRes.ok) setRoles(await rolesRes.json());
-        if (membersRes.ok) setMembers(await membersRes.json());
-        if (permissionRes.ok) setAvailablePermissions(await permissionRes.json());
+        if (membersRes.ok) {
+          const membersData = await membersRes.json();
+          setMembers(membersData);
+          console.log("Member Data: ",membersData);
+          
+        }
+        if (permissionRes.ok)
+          setAvailablePermissions(await permissionRes.json());
       } catch (error) {
         console.error("Failed to load roles, members, or permissions", error);
       }
@@ -64,29 +73,29 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
   }, [workspaceId, user?.userId]);
 
   // --- Handlers ---
-  const handleCreateRole = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateRole = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newRoleName.trim() || !user?.userId) return;
-
     setIsCreating(true);
     try {
       const res = await apiFetch(
         `/users/${user.userId}/workspace/${workspaceId}/roles`,
         {
           method: "POST",
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             name: newRoleName,
             workspace_id: workspaceId, // FIXED: Added workspace_id to the body
-            permissions: selectedPermissions 
+            permissions: selectedPermissions,
           }),
-        }
+        },
       );
 
       if (res.ok) {
         const newRole = await res.json();
         setRoles([...roles, newRole]);
-        setNewRoleName(""); 
-        setSelectedPermissions([]); 
+        if (onRoleCreated) onRoleCreated();
+        setNewRoleName("");
+        setSelectedPermissions([]);
         alert("Role created successfully!");
       } else {
         // If it's still 400, this alert will show you the specific validation error
@@ -101,7 +110,7 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
     }
   };
 
-  const handleAssignRole = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAssignRole = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedMember || !selectedRole || !user?.userId) return;
 
@@ -114,15 +123,16 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
         {
           method: "PATCH",
           body: JSON.stringify({ roleId: selectedRole }),
-        }
+        },
       );
 
       if (res.ok) {
-        const updatedRoleName = roles.find((r) => r.id === selectedRole)?.name || "";
+        const updatedRoleName =
+          roles.find((r) => r.id === selectedRole)?.name || "";
         setMembers(
           members.map((m) =>
-            m.id === selectedMember ? { ...m, role: updatedRoleName } : m
-          )
+            m.id === selectedMember ? { ...m, role: updatedRoleName } : m,
+          ),
         );
 
         setSelectedMember("");
@@ -137,6 +147,11 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
       setIsAssigning(false);
     }
   };
+  const handleTest = () => {
+    console.log("Members: ", members);
+    console.log("Roles: ", roles);
+    console.log("Available Permissions: ", availablePermissions);
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -174,15 +189,23 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-900 p-4 rounded-lg border border-gray-600 max-h-40 overflow-y-auto">
               {availablePermissions.map((perm) => (
-                <label key={perm.id} className="flex items-center space-x-2 text-gray-300 cursor-pointer hover:text-white">
+                <label
+                  key={perm.id}
+                  className="flex items-center space-x-2 text-gray-300 cursor-pointer hover:text-white"
+                >
                   <input
                     type="checkbox"
                     checked={selectedPermissions.includes(perm.id)}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedPermissions([...selectedPermissions, perm.id]);
+                        setSelectedPermissions([
+                          ...selectedPermissions,
+                          perm.id,
+                        ]);
                       } else {
-                        setSelectedPermissions(selectedPermissions.filter((id) => id !== perm.id));
+                        setSelectedPermissions(
+                          selectedPermissions.filter((id) => id !== perm.id),
+                        );
                       }
                     }}
                     className="rounded border-gray-700 text-amber-600 focus:ring-amber-500 bg-gray-800"
@@ -191,7 +214,9 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
                 </label>
               ))}
               {availablePermissions.length === 0 && (
-                <span className="text-gray-500 text-sm italic">No permissions found.</span>
+                <span className="text-gray-500 text-sm italic">
+                  No permissions found.
+                </span>
               )}
             </div>
           </div>
@@ -203,7 +228,10 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
         <h2 className="text-xl font-bold text-white mb-4">
           Assign Role to Member
         </h2>
-        <form onSubmit={handleAssignRole} className="flex flex-col sm:flex-row gap-4 items-end">
+        <form
+          onSubmit={handleAssignRole}
+          className="flex flex-col sm:flex-row gap-4 items-end"
+        >
           <div className="flex-1 w-full">
             <label className="block text-sm font-medium text-gray-400 mb-2">
               Select Member
@@ -214,10 +242,13 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
               className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors"
               required
             >
-              <option value="" disabled>Choose a member...</option>
+              <option value="" disabled>
+                Choose a member...
+              </option>
               {members.map((member) => (
                 <option key={member.id} value={member.id}>
-                  {member.name} ({member.email}) — Current: {member.role || "None"}
+                  {member.user?.name} ({member.user?.email}) — Current:{" "}
+                  {member.role || "None"}
                 </option>
               ))}
             </select>
@@ -233,7 +264,9 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
               className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors"
               required
             >
-              <option value="" disabled>Choose a role...</option>
+              <option value="" disabled>
+                Choose a role...
+              </option>
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {role.name}
@@ -249,6 +282,7 @@ const RoleManager = ({ workspaceId }: RoleManagerProps) => {
           >
             {isAssigning ? "Assigning..." : "Assign Role"}
           </button>
+          <button onClick={handleTest}>tests</button>
         </form>
       </div>
     </div>

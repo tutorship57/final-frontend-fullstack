@@ -69,6 +69,9 @@ const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
         const newWs = await response.json();
         setWorkspaces((prev) => [...prev, newWs]);
         setActiveWorkspace(newWs.id);
+      }else{
+        const errorData = await response.json();
+        console.log("Workspace: ",errorData)
       }
     } catch (error) {
       console.error("Error creating workspace:", error);

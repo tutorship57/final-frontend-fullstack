@@ -5,6 +5,7 @@ import RootLayout from "../layouts/RootLayout";
 import Home from "../pages/Home";
 import BoardSpace from "../pages/BoardSpace";
 import type { JSX } from "react";
+import RegisterPage from "../components/RegisterPage";
 
 export interface ChildrenPath {
   index?: boolean;
@@ -25,6 +26,10 @@ export const pathList: ChildrenPath[] = [
     path: "/login",
     element: <LoginPage />,
   },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
 
 ];
 export const navList: { name: string; children: ChildrenPath }[] = [
@@ -36,6 +41,10 @@ export const navList: { name: string; children: ChildrenPath }[] = [
     name: "Login",
     children: pathList[2]
   },
+    {
+    name: "Register",
+    children: pathList[3],
+  },
 
 ];
 export const router = createBrowserRouter([
@@ -43,6 +52,11 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />, // You MUST add this so the app knows where /login is
   },
+  {
+    path: "/Register",
+    element: <RegisterPage />, // You MUST add this so the app knows where /login is
+  },
+  
   {
     path: "/",
     element: (

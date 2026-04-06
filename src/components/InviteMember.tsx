@@ -15,16 +15,16 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
   const [selectedRole, setSelectedRole] = useState("");
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  console.log("logFrom inviteMember", workspaceId, workspaceOwnerId, roles )
   useEffect(() => {
     const checkPermission = async () => {
       // Owners always have permission
+      console.log(user?.userId, " = " , workspaceOwnerId)
       if (user?.userId === workspaceOwnerId) {
         setCanManage(true);
         return;
       }
 
-      // Check permissions for normal members
       try {
         const res = await apiFetch(`/users/${user?.userId}/workspace/${workspaceId}/members`);
         if (res.ok) {
@@ -43,9 +43,8 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
     if (user?.userId) checkPermission();
   }, [workspaceId, user?.userId, workspaceOwnerId]);
 
-  const handleInvite = async (e: React.FormEvent) => {
+  const handleInvite = async (e: React.FromEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email || !selectedRole) return;
 
     setLoading(true);
     try {
@@ -67,10 +66,13 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
         onMemberAdded(); // Refresh the list in the parent component
       } else {
         const error = await res.json();
+        console.log(res)
+        console.error("Invitation Error:", error);
         alert(error.message || "Invitation failed");
       }
     } catch (err) {
       alert("An error occurred");
+      
     } finally {
       setLoading(false);
     }
@@ -78,6 +80,7 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
 
   // Only render if the user has permission
   if (!canManage) return null;
+  
 
   return (
     <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg mt-6">
@@ -89,7 +92,7 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white outline-none focus:border-amber-500"
+            className="w-full bg-gray-90 border border-gray-600 rounded-lg px-4 py-2 text-white outline-none focus:border-amber-500"
             placeholder="user@example.com"
             required
           />
@@ -100,7 +103,7 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
             className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white outline-none focus:border-amber-500"
-            required
+            
           >
             <option value="">Select Role</option>
             {roles.map((r) => (

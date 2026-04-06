@@ -1,4 +1,6 @@
-import { useState, type FormEvent, type JSX} from "react";
+import { useState, type FormEvent, type JSX } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../components/utils/api";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface FormErrors {
@@ -11,11 +13,29 @@ type FocusedField = "email" | "password" | "";
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
-    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853" />
-    <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
-    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335" />
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 18 18"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
+      fill="#4285F4"
+    />
+    <path
+      d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
+      fill="#34A853"
+    />
+    <path
+      d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"
+      fill="#EA4335"
+    />
   </svg>
 );
 
@@ -24,7 +44,16 @@ interface EyeIconProps {
 }
 
 const EyeIcon: React.FC<EyeIconProps> = ({ open }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     {open ? (
       <>
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -42,8 +71,19 @@ const EyeIcon: React.FC<EyeIconProps> = ({ open }) => (
 
 const Spinner: React.FC<{ className?: string }> = ({ className = "" }) => (
   <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"
+    />
   </svg>
 );
 
@@ -55,7 +95,6 @@ const ErrorIcon: React.FC = () => (
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-
 export default function LoginPage(): JSX.Element {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -64,9 +103,9 @@ export default function LoginPage(): JSX.Element {
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [focused, setFocused] = useState<FocusedField>("");
+  const navigate = useNavigate();
 
   // ── Validation ──────────────────────────────────────────────────────────────
-
   const validate = (): FormErrors => {
     const errs: FormErrors = {};
     if (!email) errs.email = "Email is required";
@@ -76,46 +115,34 @@ export default function LoginPage(): JSX.Element {
     return errs;
   };
 
-    const loginWithGoogle = () => {
-        window.location.href = `http://localhost:3000/api/auth/oauth/google`;
-    };
-    
+  const loginWithGoogle = () => {
+    window.location.href = `http://localhost:3000/api/auth/oauth/google`;
+  };
+
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs);
-      return;
-    }
+  e.preventDefault();
+  // ... validation logic ...
+
+  setIsLoading(true);
+  try {
+    // Using your new apiFetch
+    const response = await apiFetch('/auth/login', { // Changed from /api/login
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
     
-    setErrors({});
-    setIsLoading(true);
 
-    try {
-      // 1. Send the email and password to your backend
-      const response = await fetch('http://localhost:3000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Invalid login credentials");
-      }
-
-      // 2. THIS is where you get the user data returned from the database
-      const userData = await response.json(); 
-      
-      console.log("Logged in user:", userData);
-      // 3. Do something with the data (e.g., save token, redirect to dashboard)
-      
-    } catch (error) {
-       setErrors({ email: "Login failed. Please check your credentials." });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // If we reach here, login was successful (cookie is set)
+    console.log("Login successful!");
+    window.location.href = "/"; 
+    
+  } catch (error: any) {
+    setErrors({ email: error.message });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleGoogleSSO = (): void => {
     setGoogleLoading(true);
@@ -137,8 +164,8 @@ export default function LoginPage(): JSX.Element {
       errors[field]
         ? "border-red-400 focus:ring-2 focus:ring-red-100"
         : focused === field
-        ? "border-indigo-400 ring-2 ring-indigo-100"
-        : "border-gray-200 hover:border-gray-300",
+          ? "border-indigo-400 ring-2 ring-indigo-100"
+          : "border-gray-200 hover:border-gray-300",
     ].join(" ");
 
   const isBusy = isLoading || googleLoading;
@@ -147,16 +174,13 @@ export default function LoginPage(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
-
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
       <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
 
       <div className="relative w-full max-w-sm">
-
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8">
-
           {/* Logo + heading */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 mb-4 shadow-lg shadow-indigo-200">
@@ -170,8 +194,12 @@ export default function LoginPage(): JSX.Element {
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Welcome back</h1>
-            <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
+            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+              Welcome back
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Sign in to your account
+            </p>
           </div>
 
           {/* Google SSO */}
@@ -182,7 +210,11 @@ export default function LoginPage(): JSX.Element {
             aria-label="Continue with Google"
             className="w-full h-11 flex items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.99] transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
           >
-            {googleLoading ? <Spinner className="w-4 h-4 text-gray-400" /> : <GoogleIcon />}
+            {googleLoading ? (
+              <Spinner className="w-4 h-4 text-gray-400" />
+            ) : (
+              <GoogleIcon />
+            )}
             {googleLoading ? "Redirecting…" : "Continue with Google"}
           </button>
 
@@ -195,10 +227,12 @@ export default function LoginPage(): JSX.Element {
 
           {/* Email / password form */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
-
             {/* Email field */}
             <div>
-              <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1.5">
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-gray-600 mb-1.5"
+              >
                 Email address
               </label>
               <input
@@ -207,7 +241,10 @@ export default function LoginPage(): JSX.Element {
                 autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearFieldError("email");
+                }}
                 onFocus={() => setFocused("email")}
                 onBlur={() => setFocused("")}
                 aria-invalid={!!errors.email}
@@ -215,7 +252,11 @@ export default function LoginPage(): JSX.Element {
                 className={inputClass("email")}
               />
               {errors.email && (
-                <p id="email-error" role="alert" className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <p
+                  id="email-error"
+                  role="alert"
+                  className="mt-1.5 text-xs text-red-500 flex items-center gap-1"
+                >
                   <ErrorIcon />
                   {errors.email}
                 </p>
@@ -225,7 +266,10 @@ export default function LoginPage(): JSX.Element {
             {/* Password field */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-xs font-medium text-gray-600">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-medium text-gray-600"
+                >
                   Password
                 </label>
                 <button
@@ -242,11 +286,16 @@ export default function LoginPage(): JSX.Element {
                   autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); clearFieldError("password"); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    clearFieldError("password");
+                  }}
                   onFocus={() => setFocused("password")}
                   onBlur={() => setFocused("")}
                   aria-invalid={!!errors.password}
-                  aria-describedby={errors.password ? "password-error" : undefined}
+                  aria-describedby={
+                    errors.password ? "password-error" : undefined
+                  }
                   className={`${inputClass("password")} pr-10`}
                 />
                 <button
@@ -259,7 +308,11 @@ export default function LoginPage(): JSX.Element {
                 </button>
               </div>
               {errors.password && (
-                <p id="password-error" role="alert" className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                <p
+                  id="password-error"
+                  role="alert"
+                  className="mt-1.5 text-xs text-red-500 flex items-center gap-1"
+                >
                   <ErrorIcon />
                   {errors.password}
                 </p>
@@ -286,7 +339,11 @@ export default function LoginPage(): JSX.Element {
           {/* Footer link */}
           <p className="text-center text-xs text-gray-400 mt-6">
             Don&apos;t have an account?{" "}
-            <button type="button" className="text-indigo-500 hover:text-indigo-700 font-medium transition-colors">
+            <button
+              type="button"
+              className="text-indigo-500 hover:text-indigo-700 font-medium transition-colors"
+              onClick={() => navigate("/register")}
+            >
               Create one
             </button>
           </p>
@@ -295,8 +352,13 @@ export default function LoginPage(): JSX.Element {
         {/* Terms */}
         <p className="text-center text-xs text-gray-400 mt-4">
           By signing in, you agree to our{" "}
-          <span className="underline cursor-pointer hover:text-gray-600">Terms</span> and{" "}
-          <span className="underline cursor-pointer hover:text-gray-600">Privacy Policy</span>
+          <span className="underline cursor-pointer hover:text-gray-600">
+            Terms
+          </span>{" "}
+          and{" "}
+          <span className="underline cursor-pointer hover:text-gray-600">
+            Privacy Policy
+          </span>
         </p>
       </div>
     </div>
