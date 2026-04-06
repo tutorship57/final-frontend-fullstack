@@ -110,7 +110,7 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
               <option key={r.id} value={r.id}>{r.name}</option>
             ))}
           </select>
-        </div>
+        </div>  
         <button
           type="submit"
           disabled={loading}
