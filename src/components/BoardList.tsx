@@ -22,16 +22,21 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
   const [workspaceRoles, setWorkspaceRoles] = useState([]);
   const [ownerId, setOwnerId] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  
+  // 1. Added loading state to track the async batch
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   // Logic: User can see manager if they own the workspace OR have the specific permission
   const isOwner = user?.userId === ownerId;
   const canSeeRoleManager = isOwner || userPermissions.includes("Manage-Role");
-  const canSeeInviteManager =
-    isOwner || userPermissions.includes("Manage-Member");
-  const fetchRoles = () => {
+  const canSeeInviteManager = isOwner || userPermissions.includes("Manage-Member");
+  const canSeeBoardCreate = isOwner || userPermissions.includes("Create Board");
+
+  // Re-usable function for refreshing roles specifically (e.g. after adding a member)
+  const fetchRolesOnly = () => {
     if (user?.userId && activeWorkspaceId) {
       apiFetch(`/users/${user.userId}/workspace/${activeWorkspaceId}/roles`)
         .then((res) => res.json())
@@ -39,43 +44,46 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
         .catch((err) => console.error("Error fetching roles:", err));
     }
   };
+
   useEffect(() => {
-    if (user?.userId && activeWorkspaceId) {
-      const baseUrl = `/users/${user.userId}/workspace/${activeWorkspaceId}`;
+    if (!user?.userId || !activeWorkspaceId) return;
 
-      // 1. Fetch User Permissions for this Workspace
-      apiFetch(`${baseUrl}/permissions`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setUserPermissions(data.map((p: any) => p.name));
-          }
-        })
-        .catch((err) => console.error("Error fetching permissions:", err));
+    // Start loading
+    setIsDataLoading(true);
 
-      // 2. Fetch Boards
-      apiFetch(`${baseUrl}/boards`)
-        .then((res) => res.json())
-        .then((data) => setBoardList(Array.isArray(data) ? data : []));
+    const baseUrl = `/users/${user.userId}/workspace/${activeWorkspaceId}`;
 
-      // 3. Fetch Roles (for the Invite Modal)
-      fetchRoles();
-
-      // 4. Fetch Workspace Details (to get owner_id)
-      apiFetch(baseUrl)
-        .then((res) => res.json())
-        .then((data) => {
-          setOwnerId(data.owner_id);
-        });
-    }
+    // 2. Integrated Promise.all to fetch everything simultaneously
+    Promise.all([
+      apiFetch(`${baseUrl}/permissions`).then((res) => res.json()),
+      apiFetch(`${baseUrl}/boards`).then((res) => res.json()),
+      apiFetch(baseUrl).then((res) => res.json()),
+      apiFetch(`${baseUrl}/roles`).then((res) => res.json()),
+    ])
+      .then(([permissions, boards, details, roles]) => {
+        // Update all states at once - React 18+ batches these into 1 render
+        setUserPermissions(Array.isArray(permissions) ? permissions.map((p: any) => p.name) : []);
+        setBoardList(Array.isArray(boards) ? boards : []);
+        setOwnerId(details.owner_id);
+        setWorkspaceRoles(roles);
+        
+        setIsDataLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching workspace data:", err);
+        setIsDataLoading(false);
+      });
   }, [user?.userId, activeWorkspaceId]);
 
   const handleMemberAdded = () => {
     setIsInviteMemberModalOpen(false);
-    fetchRoles();
+    fetchRolesOnly(); // Refresh roles list if needed
   };
 
-  if (loading) return <div className="text-white p-10">Loading...</div>;
+  // Check both Auth loading and Data loading
+  if (authLoading || isDataLoading) {
+    return <div className="text-white p-10">Loading Workspace...</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -86,7 +94,6 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex gap-2 z-10">
-            {/* Standard buttons visible to everyone */}
             {canSeeInviteManager && (
               <ButtonWithIcon
                 onClick={() => setIsInviteMemberModalOpen(true)}
@@ -95,7 +102,6 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
               />
             )}
 
-            {/* 🛡️ PERMISSION CHECK: Only show Manage Role if authorized or owner */}
             {canSeeRoleManager && (
               <ButtonWithIcon
                 onClick={() => setIsMemberModalOpen(true)}
@@ -132,7 +138,7 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
         </div>
       </div>
 
-      {/* Invite Member Modal */}
+      {/* Modals */}
       {isInviteMemberModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="relative bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl">
@@ -142,9 +148,7 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Invite to Workspace
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Invite to Workspace</h2>
             <InviteMember
               workspaceId={activeWorkspaceId}
               workspaceOwnerId={ownerId || ""}
@@ -155,7 +159,6 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
         </div>
       )}
 
-      {/* Role Management Modal - Wrapped in Permission check for extra safety */}
       {isMemberModalOpen && canSeeRoleManager && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="relative bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
@@ -167,13 +170,12 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
             </button>
             <RoleManager
               workspaceId={activeWorkspaceId}
-              onRoleCreated={fetchRoles}
+              onRoleCreated={fetchRolesOnly}
             />
           </div>
         </div>
       )}
 
-      {/* Create Board Modal */}
       {isCreateBoardModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="relative bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl">
@@ -185,7 +187,13 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
             </button>
             <CreateBoard
               workspaceId={activeWorkspaceId}
-              onBoardCreated={() => setIsCreateBoardModalOpen(false)}
+              onBoardCreated={() => {
+                  // Refresh board list after creation
+                  apiFetch(`/users/${user?.userId}/workspace/${activeWorkspaceId}/boards`)
+                    .then(res => res.json())
+                    .then(data => setBoardList(Array.isArray(data) ? data : []));
+                  setIsCreateBoardModalOpen(false);
+              }}
             />
           </div>
         </div>

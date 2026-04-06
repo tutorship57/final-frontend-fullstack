@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import RootLayout from "../layouts/RootLayout";
 import Home from "../pages/Home";
 import BoardSpace from "../pages/BoardSpace";
-import type { JSX } from "react";
+import { use, type JSX } from "react";
 import RegisterPage from "../components/RegisterPage";
 import { DashboardPage } from "../pages/admin/DashboardPage";
 
@@ -33,42 +33,57 @@ export const pathList: ChildrenPath[] = [
   },
   {
     path: "/admin/dashboard",
-    element: <DashboardPage/>
+    element: <DashboardPage />,
   },
-
 ];
 export const navList: { name: string; children: ChildrenPath }[] = [
   {
     name: "Main",
-    children: pathList[0]
+    children: pathList[0],
   },
-  {
-    name: "Login",
-    children: pathList[2]
-  },
-    {
-    name: "Register",
-    children: pathList[3],
-  },
-
 ];
 export const router = createBrowserRouter([
   {
     path: "/login",
-    element: <LoginPage />, // You MUST add this so the app knows where /login is
+    element: <LoginPage />,
   },
   {
-    path: "/Register",
-    element: <RegisterPage />, // You MUST add this so the app knows where /login is
+    path: "/register",
+    element: <RegisterPage />,
   },
-  
   {
     path: "/",
     element: (
       <ProtectedRoute>
         <RootLayout />
       </ProtectedRoute>
-    ), // This wraps your pages (header/footer)
-    children: [...pathList],
+    ),
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "board/:boardID",
+        element: <BoardSpace />,
+      },
+      // Admin only route
+      {
+        path: "admin/dashboard",
+        element: (
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
+      },
+    ],
   },
 ]);

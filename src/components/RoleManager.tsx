@@ -21,10 +21,10 @@ interface Permission {
 
 interface RoleManagerProps {
   workspaceId: string;
-  onRoleCreated?: () => void; 
+  onRoleCreated?: () => void;
 }
 
-const RoleManager = ({ workspaceId,onRoleCreated }: RoleManagerProps) => {
+const RoleManager = ({ workspaceId, onRoleCreated }: RoleManagerProps) => {
   const { user } = useAuth();
 
   // --- State ---
@@ -59,8 +59,7 @@ const RoleManager = ({ workspaceId,onRoleCreated }: RoleManagerProps) => {
         if (membersRes.ok) {
           const membersData = await membersRes.json();
           setMembers(membersData);
-          console.log("Member Data: ",membersData);
-          
+          console.log("Member Data: ", membersData);
         }
         if (permissionRes.ok)
           setAvailablePermissions(await permissionRes.json());
@@ -151,7 +150,7 @@ const RoleManager = ({ workspaceId,onRoleCreated }: RoleManagerProps) => {
     console.log("Members: ", members);
     console.log("Roles: ", roles);
     console.log("Available Permissions: ", availablePermissions);
-  }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -248,7 +247,10 @@ const RoleManager = ({ workspaceId,onRoleCreated }: RoleManagerProps) => {
               {members.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.user?.name} ({member.user?.email}) — Current:{" "}
-                  {member.role || "None"}
+                  {/* Map through the roles array to get names, then join them with a comma */}
+                  {member.roles && member.roles.length > 0
+                    ? member.roles.map((r: any) => r.name).join(", ")
+                    : "No Roles"}
                 </option>
               ))}
             </select>

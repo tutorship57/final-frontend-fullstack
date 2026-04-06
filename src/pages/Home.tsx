@@ -14,7 +14,7 @@ const Home = () => {
 
       {/* Main Content Area (Board) */}
       <div className="flex-1 overflow-y-auto p-6">
-        {activeWorksapceId ? (
+        {activeWorksapceId ? (  
           <BoardList activeWorkspaceId={activeWorksapceId} />
         ) : (
           <div className="text-white text-center mt-20">

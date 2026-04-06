@@ -16,8 +16,10 @@ const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
   ]);
   const { user, loading } = useAuth();
   useEffect(() => {
+
     if (user?.userId) {
-      apiFetch(`/users/${user.userId}/workspace`, {
+      console.log("Fetching workspaces for user:", user);
+      apiFetch(`/users/${user.userId}/workspace`,  {
         method: "GET",
         credentials: "include",
       })

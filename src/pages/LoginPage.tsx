@@ -103,51 +103,45 @@ export default function LoginPage(): JSX.Element {
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [focused, setFocused] = useState<FocusedField>("");
+  const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // ── Validation ──────────────────────────────────────────────────────────────
-  const validate = (): FormErrors => {
-    const errs: FormErrors = {};
-    if (!email) errs.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = "Enter a valid email";
-    if (!password) errs.password = "Password is required";
-    else if (password.length < 8) errs.password = "Minimum 8 characters";
-    return errs;
-  };
-
-  const loginWithGoogle = () => {
-    window.location.href = `http://localhost:3000/api/auth/oauth/google`;
-  };
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-  e.preventDefault();
-  // ... validation logic ...
+    e.preventDefault();
+    setIsLoading(true);
+    setServerError(null);
+    try {
+      const response = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-  setIsLoading(true);
-  try {
-    // Using your new apiFetch
-    const response = await apiFetch('/auth/login', { // Changed from /api/login
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
-    
-
-    // If we reach here, login was successful (cookie is set)
-    console.log("Login successful!");
-    window.location.href = "/"; 
-    
-  } catch (error: any) {
-    setErrors({ email: error.message });
-  } finally {
-    setIsLoading(false);
-  }
-};
+      if (response.ok) {
+        console.log("Login successful");
+        console.log("Response:", response);
+        window.location.href = "/";
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Invalid credentials");
+      }
+    } catch (error: any) {
+      setServerError(
+        error.message || "The email or password you entered is incorrect.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleSSO = (): void => {
     setGoogleLoading(true);
     // Replace with your OAuth redirect (e.g. signInWithGoogle())
-    window.location.href = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/auth/oauth/google` :`http://localhost:3000/api/auth/oauth/google`
+    window.location.href = import.meta.env.VITE_API_BASE_URL
+      ? `${import.meta.env.VITE_API_BASE_URL}/auth/oauth/google`
+      : `http://localhost:3000/api/auth/oauth/google`;
     setTimeout(() => setGoogleLoading(false), 2000);
   };
 
@@ -224,7 +218,12 @@ export default function LoginPage(): JSX.Element {
             <span className="text-xs text-gray-400 font-medium">or</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
-
+          {serverError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 text-sm">
+              <ErrorIcon />
+              {serverError}
+            </div>
+          )}
           {/* Email / password form */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {/* Email field */}
@@ -251,16 +250,6 @@ export default function LoginPage(): JSX.Element {
                 aria-describedby={errors.email ? "email-error" : undefined}
                 className={inputClass("email")}
               />
-              {errors.email && (
-                <p
-                  id="email-error"
-                  role="alert"
-                  className="mt-1.5 text-xs text-red-500 flex items-center gap-1"
-                >
-                  <ErrorIcon />
-                  {errors.email}
-                </p>
-              )}
             </div>
 
             {/* Password field */}
@@ -307,16 +296,6 @@ export default function LoginPage(): JSX.Element {
                   <EyeIcon open={showPassword} />
                 </button>
               </div>
-              {errors.password && (
-                <p
-                  id="password-error"
-                  role="alert"
-                  className="mt-1.5 text-xs text-red-500 flex items-center gap-1"
-                >
-                  <ErrorIcon />
-                  {errors.password}
-                </p>
-              )}
             </div>
 
             {/* Submit */}

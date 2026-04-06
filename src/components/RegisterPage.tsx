@@ -31,8 +31,8 @@ export default function RegisterPage(): JSX.Element {
   const getStrength = (pass: string) => {
     if (!pass) return 0;
     let score = 0;
-    if (pass.length >= 8) score++;
-    if (pass.length >= 12) score++;
+    if (pass.length >= 15) score++;
+    if (pass.length >= 20) score++;
     if (/[A-Z]/.test(pass) && /[0-9]/.test(pass)) score++; //have number and Big Letter
     if (/[^A-Za-z0-9]/.test(pass)) score++; // special
     return score;
@@ -40,8 +40,8 @@ export default function RegisterPage(): JSX.Element {
 
   const requirements = [
     {
-      label: "8-64 characters",
-      met: formData.password.length >= 8 && formData.password.length <= 64,
+      label: "15-64 characters",
+      met: formData.password.length >= 15 && formData.password.length <= 64,
     },
     {
       label: "Includes symbols or spaces",
@@ -84,13 +84,18 @@ export default function RegisterPage(): JSX.Element {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    if (formData.password !== formData.confirmPassword) {
+    setErrors({ general: "Passwords must match" });
+    return;
+  }
 
     setIsLoading(true);
     try {
+        const { confirmPassword, ...payload } = formData;
       const res = await apiFetch("/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 409) throw new Error("Email already exists");
