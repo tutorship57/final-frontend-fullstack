@@ -1,4 +1,4 @@
-import { NavLink, type RouteObject } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { navList } from "../routes/Router";
 
 export const Navigator = () => {

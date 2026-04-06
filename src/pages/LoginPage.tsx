@@ -147,7 +147,7 @@ export default function LoginPage(): JSX.Element {
   const handleGoogleSSO = (): void => {
     setGoogleLoading(true);
     // Replace with your OAuth redirect (e.g. signInWithGoogle())
-    window.location.href = `http://localhost:3000/api/auth/oauth/google`;
+    window.location.href = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/auth/oauth/google` :`http://localhost:3000/api/auth/oauth/google`
     setTimeout(() => setGoogleLoading(false), 2000);
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useParams } from "react-router-dom";
 import ListCard from "../components/cards/ListCard";
 import { DragDropProvider } from "@dnd-kit/react";

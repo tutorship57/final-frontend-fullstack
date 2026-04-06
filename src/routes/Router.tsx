@@ -6,6 +6,7 @@ import Home from "../pages/Home";
 import BoardSpace from "../pages/BoardSpace";
 import type { JSX } from "react";
 import RegisterPage from "../components/RegisterPage";
+import { DashboardPage } from "../pages/admin/DashboardPage";
 
 export interface ChildrenPath {
   index?: boolean;
@@ -29,6 +30,10 @@ export const pathList: ChildrenPath[] = [
   {
     path: "/register",
     element: <RegisterPage />,
+  },
+  {
+    path: "/admin/dashboard",
+    element: <DashboardPage/>
   },
 
 ];

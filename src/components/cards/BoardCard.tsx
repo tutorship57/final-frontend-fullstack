@@ -1,3 +1,5 @@
+
+
 // Define the interface for a single board's data
 interface BoardProps {
   id: string;

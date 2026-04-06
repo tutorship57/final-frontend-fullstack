@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import WorkSpace from '../components/WorkSpace'
 
 import BoardList from '../components/BoardList'
