@@ -4,7 +4,6 @@
 interface BoardProps {
   id: string;
   title: string;
-  taskCount: number;
   background_url?: string;
   onClick: (id: string) => void;
 }
@@ -13,11 +12,11 @@ const BoardCard = ({
   id,
   title,
   background_url,
-  taskCount,
   onClick,
 }: BoardProps) => {
   return (
-    <div
+    <button
+    type="button"
       className="group cursor-pointer bg-gray-800 border border-gray-700 rounded-xl overflow-hidden hover:border-amber-600/50 hover:shadow-xl hover:shadow-amber-900/20 transition-all duration-300"
       onClick={() => onClick(id)}
     >
@@ -47,7 +46,7 @@ const BoardCard = ({
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

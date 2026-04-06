@@ -2,12 +2,6 @@ import React, { useState, useEffect } from "react";
 import { apiFetch } from "./utils/api";
 import { useAuth } from "../contexts/type";
 
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
 
 interface Role {
   id: string;

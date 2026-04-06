@@ -22,7 +22,7 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
   const [workspaceRoles, setWorkspaceRoles] = useState([]);
   const [ownerId, setOwnerId] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
-  
+
   // 1. Added loading state to track the async batch
   const [isDataLoading, setIsDataLoading] = useState(true);
 
@@ -32,7 +32,8 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
   // Logic: User can see manager if they own the workspace OR have the specific permission
   const isOwner = user?.userId === ownerId;
   const canSeeRoleManager = isOwner || userPermissions.includes("Manage-Role");
-  const canSeeInviteManager = isOwner || userPermissions.includes("Manage-Member");
+  const canSeeInviteManager =
+    isOwner || userPermissions.includes("Manage-Member");
   const canSeeBoardCreate = isOwner || userPermissions.includes("Create Board");
 
   // Re-usable function for refreshing roles specifically (e.g. after adding a member)
@@ -62,11 +63,13 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
     ])
       .then(([permissions, boards, details, roles]) => {
         // Update all states at once - React 18+ batches these into 1 render
-        setUserPermissions(Array.isArray(permissions) ? permissions.map((p: any) => p.name) : []);
+        setUserPermissions(
+          Array.isArray(permissions) ? permissions.map((p: any) => p.name) : [],
+        );
         setBoardList(Array.isArray(boards) ? boards : []);
         setOwnerId(details.owner_id);
         setWorkspaceRoles(roles);
-        
+
         setIsDataLoading(false);
       })
       .catch((err) => {
@@ -109,13 +112,15 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
                 icon="+"
               />
             )}
-
+              {canSeeBoardCreate && (
             <ButtonWithIcon
               onClick={() => setIsCreateBoardModalOpen(true)}
               text="New Board"
               icon="+"
             />
+          )}
           </div>
+
         </div>
       </header>
 
@@ -128,14 +133,12 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
             onClick={(id) => navigate(`/board/${id}`)}
           />
         ))}
-        <div
+        <button
           className="border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center p-5 hover:border-gray-500 cursor-pointer transition-colors min-h-40"
           onClick={() => setIsCreateBoardModalOpen(true)}
         >
-          <span className="text-gray-500 text-sm font-medium">
-            Create New Board
-          </span>
-        </div>
+          <span>Create New Board</span>
+        </button>
       </div>
 
       {/* Modals */}
@@ -148,7 +151,9 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold text-white mb-6">Invite to Workspace</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Invite to Workspace
+            </h2>
             <InviteMember
               workspaceId={activeWorkspaceId}
               workspaceOwnerId={ownerId || ""}
@@ -188,11 +193,15 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
             <CreateBoard
               workspaceId={activeWorkspaceId}
               onBoardCreated={() => {
-                  // Refresh board list after creation
-                  apiFetch(`/users/${user?.userId}/workspace/${activeWorkspaceId}/boards`)
-                    .then(res => res.json())
-                    .then(data => setBoardList(Array.isArray(data) ? data : []));
-                  setIsCreateBoardModalOpen(false);
+                // Refresh board list after creation
+                apiFetch(
+                  `/users/${user?.userId}/workspace/${activeWorkspaceId}/boards`,
+                )
+                  .then((res) => res.json())
+                  .then((data) =>
+                    setBoardList(Array.isArray(data) ? data : []),
+                  );
+                setIsCreateBoardModalOpen(false);
               }}
             />
           </div>

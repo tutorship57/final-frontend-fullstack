@@ -43,7 +43,7 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
     if (user?.userId) checkPermission();
   }, [workspaceId, user?.userId, workspaceOwnerId]);
 
-  const handleInvite = async (e: React.FromEvent<HTMLFormElement>) => {
+  const handleInvite = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setLoading(true);

@@ -1,11 +1,9 @@
 // components/LogoutButton.tsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 
 const LogoutButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
   const confirmLogout = window.confirm("Are you sure you want to log out?");

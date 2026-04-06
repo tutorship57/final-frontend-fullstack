@@ -1,5 +1,4 @@
 import  { useState } from "react";
-import { useParams } from "react-router-dom";
 import ListCard from "../components/cards/ListCard";
 import { DragDropProvider } from "@dnd-kit/react";
 import type { TaskProps } from "../components/cards/TaskCard";
@@ -18,8 +17,6 @@ interface Task {
 }
 
 const BoardSpace = () => {
-  const { boardID } = useParams();
-
   // Mock data structure
   const [columns, setColumns] = useState<Column[]>([
     {

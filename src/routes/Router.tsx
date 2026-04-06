@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import RootLayout from "../layouts/RootLayout";
 import Home from "../pages/Home";
 import BoardSpace from "../pages/BoardSpace";
-import { use, type JSX } from "react";
+import { type JSX } from "react";
 import RegisterPage from "../components/RegisterPage";
 import { DashboardPage } from "../pages/admin/DashboardPage";
 
