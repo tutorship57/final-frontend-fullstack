@@ -60,27 +60,12 @@ export default function RegisterPage(): JSX.Element {
     const errs: FormErrors = {};
     if (!formData.name) errs.name = "Name is required";
     if (!formData.email.match(/\S+@\S+\.\S+/)) errs.email = "Invalid email";
-    if (formData.password.length < 8) errs.password = "Password too short";
+    if (formData.password.length < 15) errs.password = "Password too short";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const validatePasswords = (): boolean => {
-    // Check if either field is empty first
-    if (!formData.password || !formData.confirmPassword) {
-      return false;
-    }
-
-    // The actual comparison
-    const isMatch = formData.password === formData.confirmPassword;
-
-    if (!isMatch) {
-      setErrors((prev) => ({ ...prev, password: "Passwords do not match" }));
-    }
-
-    return isMatch;
-  };
-
+ 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;

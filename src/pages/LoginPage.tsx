@@ -124,8 +124,15 @@ export default function LoginPage(): JSX.Element {
         console.log("Response:", response);
         window.location.href = "/";
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Invalid credentials");
+        const contentType = response.headers.get("content-type");
+        let errorMessage = "Invalid credentials";
+
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       setServerError(
@@ -138,11 +145,10 @@ export default function LoginPage(): JSX.Element {
 
   const handleGoogleSSO = (): void => {
     setGoogleLoading(true);
-    // Replace with your OAuth redirect (e.g. signInWithGoogle())
-    window.location.href = import.meta.env.VITE_API_BASE_URL
-      ? `${import.meta.env.VITE_API_BASE_URL}/auth/oauth/google`
-      : `http://localhost:3000/api/auth/oauth/google`;
-    setTimeout(() => setGoogleLoading(false), 2000);
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+    // Ensure we are redirecting to the Backend, not the Frontend router
+    window.location.href = `${baseUrl}/auth/oauth/google`;
   };
 
   const clearFieldError = (field: keyof FormErrors): void => {
