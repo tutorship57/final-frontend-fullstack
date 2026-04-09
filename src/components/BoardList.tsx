@@ -243,7 +243,7 @@ useEffect(() => {
             <InviteMember
               workspaceId={activeWorkspaceId}
               workspaceOwnerId={ownerId || ""}
-              roles={workspaceRoles}
+              roles={workspaceRoles || []}
               onMemberAdded={handleMemberAdded}
             />
           </div>
