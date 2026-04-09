@@ -20,7 +20,7 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
   const [isViewMembersModalOpen, setIsViewMembersModalOpen] = useState(false);
   const [allMembers, setAllMembers] = useState<any[]>([]);
   const [boardList, setBoardList] = useState<Board[]>([]);
-  const [workspaceRoles, setWorkspaceRoles] = useState([]);
+  const [workspaceRoles, setWorkspaceRoles] = useState<any[] | null>(null);
   const [ownerId, setOwnerId] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
@@ -49,7 +49,7 @@ const BoardList = ({ activeWorkspaceId }: BoardListProps) => {
 useEffect(() => {
     if (!user?.userId || !activeWorkspaceId) return;
 
-    setIsDataLoading(true);
+    let isMounted = true;
 
     const baseUrl = `/users/${user.userId}/workspace/${activeWorkspaceId}`;
 
@@ -57,10 +57,12 @@ useEffect(() => {
     Promise.all([
       apiFetch(`${baseUrl}/permissions`).then((res) => res.ok ? res.json() : []),
       apiFetch(`${baseUrl}/boards`).then((res) => res.ok ? res.json() : []),
-      apiFetch(baseUrl).then((res) => res.ok ? res.json() : {}),
+      apiFetch(baseUrl).then((res) => res.ok ? res.json() : null),
       apiFetch(`${baseUrl}/roles`).then((res) => res.ok ? res.json() : []),
     ])
       .then(([permissions, boards, details, roles]) => {
+        if (!isMounted) return;
+
         setUserPermissions(
           Array.isArray(permissions) ? permissions.map((p: any) => p.name) : [],
         );
@@ -68,14 +70,19 @@ useEffect(() => {
         setOwnerId(details.owner_id);
         
         // Ensure roles is always an array, even if the backend blocked it (403)
-        setWorkspaceRoles(Array.isArray(roles) ? roles : []); 
+        setWorkspaceRoles(Array.isArray(roles) ? roles : null); 
 
         setIsDataLoading(false);
       })
       .catch((err) => {
+        if (!isMounted) return;
         console.error("Error fetching workspace data:", err);
         setIsDataLoading(false);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [user?.userId, activeWorkspaceId]);
 
   const handleMemberAdded = () => {
