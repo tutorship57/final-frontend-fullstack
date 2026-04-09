@@ -23,7 +23,6 @@ export default function RegisterPage(): JSX.Element {
     password: "",
     confirmPassword: "",
   });
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -66,6 +65,7 @@ export default function RegisterPage(): JSX.Element {
   };
 
  
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
