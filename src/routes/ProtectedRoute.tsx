@@ -17,7 +17,9 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-
+  // if (user.role === "admin") {
+  //   return <Navigate to="/admin/overview" replace />;
+  // }
   // 2. Check if user has the required role
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />; // Redirect unauthorized users to home

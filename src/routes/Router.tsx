@@ -36,12 +36,6 @@ export const pathList: ChildrenPath[] = [
     element: <DashboardPage />,
   },
 ];
-export const navList: { name: string; children: ChildrenPath }[] = [
-  {
-    name: "Main",
-    children: pathList[0],
-  },
-];
 export const router = createBrowserRouter([
   {
     path: "/login",
@@ -61,15 +55,23 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        // HIDE Home from Admin: Redirect to admin/overview if role is admin
+        element: (
+          <ProtectedRoute allowedRoles={["user", "company"]}>
+            <Home />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "board/:boardID",
-        element: <BoardSpace />,
+        path: "admin/overview", // New Overview Page
+        element: (
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Home /> 
+          </ProtectedRoute>
+        ),
       },
-      // Admin only route
       {
-        path: "admin/dashboard",
+        path: "admin/dashboard", // Activity Log
         element: (
           <ProtectedRoute allowedRoles={["admin"]}>
             <DashboardPage />
@@ -87,3 +89,9 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+export const navList = [
+  { name: "Main", path: "/", roles: ["user", "company"] },
+  { name: "Overview", path: "/admin/overview", roles: ["admin"] },
+  { name: "Activity Log", path: "/admin/dashboard", roles: ["admin"] },
+];

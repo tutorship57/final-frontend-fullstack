@@ -7,7 +7,7 @@ interface WorkspaceProps{
   setActiveWorkspace: (activeId:string)=> void
 }
 const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
-  
+  const [items, setItems] = useState<{ id: string; name: string }[]>([]);
   const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([
     {
       id: "",
@@ -15,33 +15,23 @@ const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
     },
   ]);
   const { user, loading } = useAuth();
-  useEffect(() => {
+ useEffect(() => {
+    if (!user) return;
 
-    if (user?.userId) {
-      console.log("Fetching workspaces for user:", user);
-      apiFetch(`/users/${user.userId}/workspace`,  {
-        method: "GET",
-        credentials: "include",
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch");
-          return res.json();
-        })
-        .then((data) => {
-          // Check if data is an array before setting state
-          if (Array.isArray(data)) {
-            setWorkspaces(data);
-          } else {
-            console.error("Backend did not return an array:", data);
-            setWorkspaces([]);
-          }
-        })
-        .catch((err) => {
-          console.error("Fetch error:", err);
-          setWorkspaces([]);
-        });
-    }
-    console.log(user)
+    // Admin fetches Companies; Users fetch their own Workspaces
+    const endpoint = user.role === 'admin' 
+      ? `/user?role=company` // Backend needs to support filtering users by role
+      : `/users/${user.userId}/workspace`; 
+
+    apiFetch(endpoint)
+      .then((res) => res.json())
+      .then((data) => {
+        const formatted = data.map((item: any) => ({
+          id: item.id,
+          name: item.email || item.name, // Show company email as the label
+        }));
+        setItems(formatted);
+      });
   }, [user]);
 
   //Create workspace
@@ -73,6 +63,7 @@ const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
         setActiveWorkspace(newWs.id);
       }else{
         const errorData = await response.json();
+        alert("Failed to create workspace")
         console.log("Workspace: ",errorData)
       }
     } catch (error) {
@@ -82,28 +73,25 @@ const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <aside className="w-64 h-full bg-gray-800 border-r border-gray-700 shadow-2xl flex flex-col">
-      <div className="p-4 border-b border-gray-700">
-        <h2 className="text-white font-bold text-lg text-center tracking-wide">
-          WORKSPACES
-        </h2>
+    <aside className="w-64 h-full bg-gray-800 border-r border-gray-700 flex flex-col">
+      <div className="p-4 border-b border-gray-700 text-white font-bold text-center">
+        {user?.role === 'admin' ? "COMPANIES" : "WORKSPACES"}
       </div>
-      <nav className="flex-1 p-2 space-y-1 mt-4">
-        {/* Use the state 'workspaces' instead of 'workspaces1' */}
-        {workspaces.map((ws) => (
+      <nav className="flex-1 p-2 space-y-1">
+        {items.map((item) => (
           <WorkSpaceItem
-            key={ws.id}
-            name={ws.name}
-            isActive={activeWorkSpace === ws.id}
-            onClick={() => setActiveWorkspace(ws.id)}
-            isCreate={false}
-          />
+            key={item.id}
+            name={item.name}
+            isActive={activeWorkSpace === item.id}
+            onClick={() => setActiveWorkspace(item.id)} isCreate={false}/>
         ))}
-        <WorkSpaceItem
-          name={"+ Create New"}
-          onClick={createNewWorkspace}
-          isCreate={true}
-        />
+        {user?.role === "company" && (
+          <WorkSpaceItem
+            name="+ Create Workspace"
+            onClick={createNewWorkspace}
+            isCreate={true}
+          />
+        )}
       </nav>
     </aside>
   );

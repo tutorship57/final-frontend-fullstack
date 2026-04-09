@@ -39,26 +39,28 @@ const RoleManager = ({ workspaceId, onRoleCreated }: RoleManagerProps) => {
   const [isAssigning, setIsAssigning] = useState(false);
 
   // --- Fetch Initial Data ---
-  useEffect(() => {
+ useEffect(() => {
     const loadData = async () => {
       if (!user?.userId || !workspaceId) return;
       try {
         const [rolesRes, membersRes, permissionRes] = await Promise.all([
-          apiFetch(`/users/${user.userId}/workspace/${workspaceId}/roles`),
-          apiFetch(`/users/${user.userId}/workspace/${workspaceId}/members`),
-          apiFetch(`/permissions`),
+          apiFetch(`/users/${user.userId}/workspace/${workspaceId}/roles`, { credentials: 'include' }),
+          apiFetch(`/users/${user.userId}/workspace/${workspaceId}/members`, { credentials: 'include' }),
+          
+          // CHANGED: Fetching from the new global route
+          apiFetch(`/permissions/list`, { credentials: 'include' }), 
         ]);
 
         if (rolesRes.ok) setRoles(await rolesRes.json());
-        if (membersRes.ok) {
-          const membersData = await membersRes.json();
-          setMembers(membersData);
-          console.log("Member Data: ", membersData);
+        if (membersRes.ok) setMembers(await membersRes.json());
+        
+        if (permissionRes.ok) {
+          const permData = await permissionRes.json();
+          setAvailablePermissions(permData);
+          console.log("ACTUAL Permissions: ", permData); // This should now show objects with 'name'
         }
-        if (permissionRes.ok)
-          setAvailablePermissions(await permissionRes.json());
       } catch (error) {
-        console.error("Failed to load roles, members, or permissions", error);
+        console.error("Failed to load data", error);
       }
     };
 

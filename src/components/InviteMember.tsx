@@ -18,30 +18,38 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
   console.log("logFrom inviteMember", workspaceId, workspaceOwnerId, roles )
   useEffect(() => {
     const checkPermission = async () => {
-      // Owners always have permission
-      console.log(user?.userId, " = " , workspaceOwnerId)
-      if (user?.userId === workspaceOwnerId) {
+      // 1. Owners always have permission (if ownerId successfully loaded)
+      if (workspaceOwnerId && user?.userId === workspaceOwnerId) {
         setCanManage(true);
         return;
       }
 
+      // 2. Fallback: Check if the user has a role with "Manage-Member" permission
       try {
-        const res = await apiFetch(`/users/${user?.userId}/workspace/${workspaceId}/members`);
+        const res = await apiFetch(
+          `/users/${user?.userId}/workspace/${workspaceId}/members`,
+          { credentials: 'include' }
+        );
+
         if (res.ok) {
           const members = await res.json();
+          // Find the currently logged-in user in the member list
           const me = members.find((m: any) => m.user?.id === user?.userId);
-          const hasPerm = me?.roles?.some((role: any) =>
-            role.permissions?.some((p: any) => p.name === "Manage-Member")
+          
+          // Look through the user's roles and check for the permission
+          const hasPerm = me?.roles?.some((role: any) => 
+            role.permissions?.some((perm: any) => perm.name === "Manage-Member")
           );
+
           setCanManage(!!hasPerm);
         }
-      } catch (err) {
-        console.error("Permission check failed", err);
+      } catch (error) {
+        console.error("Failed to fetch member permissions:", error);
       }
     };
 
-    if (user?.userId) checkPermission();
-  }, [workspaceId, user?.userId, workspaceOwnerId]);
+    checkPermission();
+  }, [workspaceId, workspaceOwnerId, user?.userId]);
 
   const handleInvite = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -105,10 +113,10 @@ const InviteMember = ({ workspaceId, workspaceOwnerId, roles, onMemberAdded }: I
             className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white outline-none focus:border-amber-500"
             
           >
-            <option value="">Select Role</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
+            <option value="">No Role (Default Permissions)</option>
+  {roles.map((r) => (
+    <option key={r.id} value={r.id}>{r.name}</option>
+  ))}
           </select>
         </div>  
         <button
