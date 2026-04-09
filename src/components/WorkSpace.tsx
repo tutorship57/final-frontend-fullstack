@@ -8,7 +8,7 @@ interface WorkspaceProps{
 }
 const WorkSpace = ({activeWorkSpace, setActiveWorkspace}:WorkspaceProps)=> {
   const [items, setItems] = useState<{ id: string; name: string }[]>([]);
-  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([
+  const [, setWorkspaces] = useState<{ id: string; name: string }[]>([
     {
       id: "",
       name: "",
