@@ -23,7 +23,6 @@ export default function RegisterPage(): JSX.Element {
     password: "",
     confirmPassword: "",
   });
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -65,21 +64,6 @@ export default function RegisterPage(): JSX.Element {
     return Object.keys(errs).length === 0;
   };
 
-  const validatePasswords = (): boolean => {
-    // Check if either field is empty first
-    if (!formData.password || !formData.confirmPassword) {
-      return false;
-    }
-
-    // The actual comparison
-    const isMatch = formData.password === formData.confirmPassword;
-
-    if (!isMatch) {
-      setErrors((prev) => ({ ...prev, password: "Passwords do not match" }));
-    }
-
-    return isMatch;
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
